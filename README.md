@@ -35,3 +35,22 @@ Task(id, title, description,userId)
 
 В приложении должна быть реализована логика на каждый advice - свой метод, можно сделать больше, использовать несколько advice на отдельные методы, но меньше нельзя.
 
+==============
+
+Можно протестировать приложение с помощью curl:
+
+# Создать задачу
+curl -X POST -H "Content-Type: application/json" -d '{"title":"First task","description":"Do something","userId":1}' http://localhost:8080/tasks
+
+# Получить все задачи
+curl http://localhost:8080/tasks
+
+# Получить задачу по ID
+curl http://localhost:8080/tasks/1
+
+# Обновить задачу
+curl -X PUT -H "Content-Type: application/json" -d '{"title":"Updated task","description":"Do something else","userId":1}' http://localhost:8080/tasks/1
+
+# Удалить задачу
+curl -X DELETE http://localhost:8080/tasks/1
+

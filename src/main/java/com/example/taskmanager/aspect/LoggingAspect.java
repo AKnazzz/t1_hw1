@@ -1,14 +1,24 @@
 package com.example.taskmanager.aspect;
 
-import lombok.extern.slf4j.Slf4j;
+import com.example.taskmanager.exception.TaskNotFoundException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-@Slf4j
 public class LoggingAspect {
+    private final Logger log;
+
+    public LoggingAspect() {
+        this(LoggerFactory.getLogger(LoggingAspect.class));
+    }
+
+    LoggingAspect(Logger log) {
+        this.log = log;
+    }
 
     @Before("execution(* com.example.taskmanager.service.TaskService.createTask(..))")
     public void logBeforeCreateTask() {
@@ -19,8 +29,8 @@ public class LoggingAspect {
             pointcut = "execution(* com.example.taskmanager.service.TaskService.*(..))",
             throwing = "ex"
     )
-    public void logAfterThrowing(Exception ex) {
-        log.error("Exception occurred: {}", ex.getMessage());
+    public void logAfterThrowing(TaskNotFoundException ex) {
+        log.error("Task not found: {}", ex.getMessage());
     }
 
     @AfterReturning(
