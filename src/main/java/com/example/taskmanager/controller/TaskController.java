@@ -1,7 +1,7 @@
 package com.example.taskmanager.controller;
 
-import com.example.taskmanager.dto.TaskDto;
 import com.example.taskmanager.model.Task;
+import com.example.taskmanager.model.dto.TaskDto;
 import com.example.taskmanager.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
