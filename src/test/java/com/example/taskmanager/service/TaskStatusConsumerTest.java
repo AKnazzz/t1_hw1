@@ -7,8 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class TaskStatusConsumerTest {
@@ -21,21 +23,28 @@ class TaskStatusConsumerTest {
 
     @Test
     void shouldProcessValidMessage() {
-        String message = "1:COMPLETED";
+        // Given
+        String validMessage = "1:COMPLETED";
+        doNothing().when(notificationService)
+                .sendStatusChangeNotification(1L, TaskStatus.COMPLETED, "user@example.com");
 
-        doNothing().when(notificationService).sendStatusChangeNotification(anyLong(), any(TaskStatus.class), anyString());
+        // When
+        taskStatusConsumer.listenTaskStatusUpdates(validMessage);
 
-        taskStatusConsumer.listenTaskStatusUpdates(message);
-
-        verify(notificationService).sendStatusChangeNotification(1L, TaskStatus.COMPLETED, "user@example.com");
+        // Then
+        verify(notificationService, times(1))
+                .sendStatusChangeNotification(1L, TaskStatus.COMPLETED, "user@example.com");
     }
 
     @Test
-    void shouldLogErrorForInvalidMessage() {
-        String invalidMessage = "invalid_format";
+    void shouldNotCallServiceForInvalidFormat() {
+        // Given
+        String invalidMessage = "invalid-format";
 
+        // When
         taskStatusConsumer.listenTaskStatusUpdates(invalidMessage);
 
+        // Then
         verifyNoInteractions(notificationService);
     }
 }

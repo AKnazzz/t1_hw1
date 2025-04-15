@@ -1,28 +1,44 @@
 package com.example.taskmanager.service;
 
 import com.example.taskmanager.model.TaskStatus;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class TaskStatusProducer {
-    private static final String TOPIC = "task-status-updates";
+
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private String topicName;
+
+    public TaskStatusProducer(KafkaTemplate<String, String> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    @Value("${kafka.topic.task-status-updates}")
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    }
 
     public void sendTaskStatusUpdate(Long taskId, TaskStatus newStatus) {
-        log.info("Preparing to send task status update for Task ID: {}, Status: {}", taskId, newStatus);
-
         String message = String.format("%d:%s", taskId, newStatus);
         try {
-            kafkaTemplate.send(TOPIC, message);
-            log.info("Message successfully sent to topic '{}': {}", TOPIC, message);
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(topicName, message);
+            future.whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("Failed to send message to topic {}: {}", topicName, message, ex);
+                } else {
+                    log.info("Message sent successfully to topic {}: {}", topicName, message);
+                }
+            });
         } catch (Exception e) {
-            log.error("Failed to send message to topic '{}': {}", TOPIC, e.getMessage(), e);
+            log.error("Error sending message to Kafka", e);
+            throw new RuntimeException("Failed to send Kafka message", e);
         }
     }
 }
-
