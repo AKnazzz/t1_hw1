@@ -7,11 +7,13 @@
 ## Основные функции
 
 ### CRUD операции для задач
+
 - Создание, чтение, обновление и удаление задач
 - Получение списка всех задач
 - Логирование операций через Spring AOP
 
 ### Система уведомлений
+
 - Отправка событий в Kafka при изменении статуса задачи
 - Обработка событий и отправка email-уведомлений
 - Надежная доставка сообщений
@@ -35,17 +37,20 @@
 ## Установка и запуск
 
 ### 1. Клонирование репозитория
+
 ```bash
 git clone https://github.com/your-repo/t1_hw1.git
 cd t1_hw1
 ```
 
 ### 2. Запуск инфраструктуры
+
 ```bash
 docker-compose up -d
 ```
 
 ### 3. Создание топиков Kafka
+
 ```bash
 docker exec -it kafka kafka-topics --create \
   --topic task-status-updates \
@@ -55,6 +60,7 @@ docker exec -it kafka kafka-topics --create \
 ```
 
 ### 4. Запуск приложения
+
 ```bash
 mvn spring-boot:run
 ```
@@ -62,6 +68,7 @@ mvn spring-boot:run
 ## Использование API
 
 ### Создание задачи
+
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"title":"First task","description":"Do something","userId":1,"status":"PENDING"}' \
@@ -69,11 +76,13 @@ curl -X POST -H "Content-Type: application/json" \
 ```
 
 ### Получение задачи по ID
+
 ```bash
 curl http://localhost:8080/tasks/1
 ```
 
 ### Обновление задачи
+
 ```bash
 curl -X PUT -H "Content-Type: application/json" \
   -d '{"title":"Updated task","description":"Do something else","userId":1,"status":"IN_PROGRESS"}' \
@@ -81,11 +90,13 @@ curl -X PUT -H "Content-Type: application/json" \
 ```
 
 ### Удаление задачи
+
 ```bash
 curl -X DELETE http://localhost:8080/tasks/1
 ```
 
 ### Получение всех задач
+
 ```bash
 curl http://localhost:8080/tasks
 ```
@@ -93,6 +104,7 @@ curl http://localhost:8080/tasks
 ## Настройка email-уведомлений
 
 1. Отредактируйте `application.properties`:
+
 ```properties
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
@@ -125,6 +137,7 @@ Client -> REST Controller -> Service -> Repository
 ## Логирование
 
 Система логирует:
+
 - Попытки создания задач
 - Успешные операции получения задач
 - Ошибки (например, задача не найдена)
@@ -133,11 +146,13 @@ Client -> REST Controller -> Service -> Repository
 ## Тестирование
 
 Запуск тестов:
+
 ```bash
 mvn test
 ```
 
 Тесты покрывают:
+
 - Unit-тесты сервисов
 - Интеграционные тесты REST API
 - Тесты Kafka с EmbeddedKafka
