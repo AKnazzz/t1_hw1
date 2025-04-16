@@ -1,9 +1,9 @@
 package com.example.taskmanager.controller;
 
+import com.example.apiloggingstarter.annotation.Loggable;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.dto.TaskDto;
 import com.example.taskmanager.service.TaskService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,32 +19,40 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tasks")
-@RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
 
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @Loggable
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Task createTask(@RequestBody TaskDto taskDto) {
         return taskService.createTask(taskDto);
     }
 
+    @Loggable
     @GetMapping("/{id}")
     public Task getTask(@PathVariable Long id) {
         return taskService.getTaskById(id);
     }
 
+    @Loggable
     @PutMapping("/{id}")
     public Task updateTask(@PathVariable Long id, @RequestBody TaskDto taskDto) {
         return taskService.updateTask(id, taskDto);
     }
 
+    @Loggable
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
     }
 
+    @Loggable
     @GetMapping
     public List<Task> getAllTasks() {
         return taskService.getAllTasks();
