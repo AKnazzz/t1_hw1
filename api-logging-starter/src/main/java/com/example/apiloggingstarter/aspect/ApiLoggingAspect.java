@@ -13,7 +13,6 @@ import org.springframework.util.StopWatch;
 
 @Slf4j
 @Aspect
-@Component
 @RequiredArgsConstructor
 public class ApiLoggingAspect {
     private final ApiLoggingProperties properties;
@@ -22,9 +21,6 @@ public class ApiLoggingAspect {
             "@within(org.springframework.stereotype.Controller) || " +
             "@within(org.springframework.web.bind.annotation.RestController)")
     public Object logApiCall(ProceedingJoinPoint joinPoint) throws Throwable {
-        if (!properties.isEnabled()) {
-            return joinPoint.proceed();
-        }
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String className = joinPoint.getTarget().getClass().getSimpleName();
