@@ -1,13 +1,11 @@
 package com.example.apiloggingstarter.aspect;
 
-import com.example.apiloggingstarter.aspect.ApiLoggingAspect;
 import com.example.apiloggingstarter.properties.ApiLoggingProperties;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -1,7 +1,6 @@
 package com.example.apiloggingstarter.configuration;
 
 import com.example.apiloggingstarter.aspect.ApiLoggingAspect;
-import com.example.apiloggingstarter.configuration.ApiLoggingAutoConfiguration;
 import com.example.apiloggingstarter.properties.ApiLoggingProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
