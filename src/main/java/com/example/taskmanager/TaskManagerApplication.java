@@ -5,7 +5,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Slf4j
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.mail.MailSenderValidatorAutoConfiguration.class
+})
 public class TaskManagerApplication {
 
     public static void main(String[] args) {
