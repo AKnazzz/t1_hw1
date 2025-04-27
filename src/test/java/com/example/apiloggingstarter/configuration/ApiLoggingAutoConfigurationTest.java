@@ -6,28 +6,34 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = {ApiLoggingAutoConfiguration.class})
 class ApiLoggingAutoConfigurationTest {
 
     @Autowired
-    private ApplicationContext context;
+    private ApiLoggingProperties apiLoggingProperties;
+
+    @Autowired
+    private ApiLoggingAspect apiLoggingAspect;
 
     @Test
-    @DisplayName("Проверка включения логирования")
-    void shouldEnableApiLogging() {
-        assertNotNull(context.getBean(ApiLoggingAspect.class), "ApiLoggingAspect должен быть активен");
+    @DisplayName("Проверка регистрации ApiLoggingAspect")
+    void shouldRegisterApiLoggingAspect() {
+        // Проверяем, что бин ApiLoggingAspect зарегистрирован и не null
+        assertThat(apiLoggingAspect).isNotNull();
     }
 
     @Test
-    @DisplayName("Проверка конфигурации свойств логирования")
-    void shouldLoadProperties() {
-        ApiLoggingProperties properties = context.getBean(ApiLoggingProperties.class);
-
-        assertTrue(properties.isEnabled());
-        assertEquals("INFO", properties.getLevel());
+    @DisplayName("Проверка корректной загрузки свойств логирования")
+    void shouldLoadApiLoggingProperties() {
+        // Проверяем, что настройки ApiLoggingProperties загружены корректно
+        assertThat(apiLoggingProperties).isNotNull();
+        assertThat(apiLoggingProperties.isEnabled()).isTrue();
+        assertThat(apiLoggingProperties.getLevel()).isEqualTo("INFO");
+        assertThat(apiLoggingProperties.isLogRequest()).isTrue();
+        assertThat(apiLoggingProperties.isLogResponse()).isTrue();
+        assertThat(apiLoggingProperties.isLogExecutionTime()).isTrue();
     }
 }

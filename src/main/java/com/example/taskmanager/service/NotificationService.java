@@ -15,6 +15,11 @@ public class NotificationService {
     private final JavaMailSender mailSender;
 
     public void sendStatusChangeNotification(Long taskId, TaskStatus newStatus, String emailTo) {
+        if (emailTo == null || emailTo.trim().isEmpty()) {
+            log.warn("Notification not sent: email is null or empty for task {}", taskId);
+            return;
+        }
+
         log.info("Attempting to send notification for task {} to {}", taskId, emailTo);
 
         try {
@@ -33,3 +38,4 @@ public class NotificationService {
         }
     }
 }
+

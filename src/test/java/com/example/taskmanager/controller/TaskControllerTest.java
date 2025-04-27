@@ -1,10 +1,12 @@
 package com.example.taskmanager.controller;
 
+import com.example.taskmanager.exception.TaskNotFoundException;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.TaskStatus;
 import com.example.taskmanager.model.dto.TaskDto;
 import com.example.taskmanager.service.TaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -34,6 +36,7 @@ class TaskControllerTest {
     private TaskService taskService;
 
     @Test
+    @DisplayName("Создание задачи")
     void createTask_ShouldReturnCreatedTask() throws Exception {
         TaskDto taskDto = new TaskDto("Test", "Desc", 1L, TaskStatus.PENDING);
         Task task = new Task(1L, "Test", "Desc", 1L, TaskStatus.PENDING);
@@ -49,6 +52,7 @@ class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("Получение существующей задачи")
     void getTask_ShouldReturnTask() throws Exception {
         Task task = new Task(1L, "Test", "Desc", 1L, TaskStatus.PENDING);
 
@@ -61,6 +65,18 @@ class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("Получение несуществующей задачи")
+    void getNonExistentTask_ShouldReturnNotFound() throws Exception {
+        when(taskService.getTaskById(anyLong())).thenThrow(new TaskNotFoundException(999L));
+
+        mockMvc.perform(get("/tasks/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("TASK_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Task not found with id: 999"));
+    }
+
+    @Test
+    @DisplayName("Обновление задачи")
     void updateTask_ShouldReturnUpdatedTask() throws Exception {
         TaskDto taskDto = new TaskDto("Updated", "New desc", 1L, TaskStatus.IN_PROGRESS);
         Task task = new Task(1L, "Updated", "New desc", 1L, TaskStatus.IN_PROGRESS);
@@ -76,12 +92,14 @@ class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("Удаление задачи")
     void deleteTask_ShouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/tasks/1"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
+    @DisplayName("Получение списка задач")
     void getAllTasks_ShouldReturnTaskList() throws Exception {
         List<Task> tasks = List.of(
                 new Task(1L, "Task 1", "Desc 1", 1L, TaskStatus.PENDING),

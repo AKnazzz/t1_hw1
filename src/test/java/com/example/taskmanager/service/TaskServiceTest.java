@@ -6,16 +6,19 @@ import com.example.taskmanager.model.TaskStatus;
 import com.example.taskmanager.model.dto.TaskDto;
 import com.example.taskmanager.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +53,7 @@ class TaskServiceTest {
     }
 
     @Test
+    @DisplayName("Создание задачи должно возвращать сохраненную задачу")
     void createTask_ShouldReturnSavedTask() {
         when(taskRepository.save(any(Task.class))).thenReturn(task);
 
@@ -61,6 +65,7 @@ class TaskServiceTest {
     }
 
     @Test
+    @DisplayName("Получение задачи по ID, когда задача существует")
     void getTaskById_WhenTaskExists_ShouldReturnTask() {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
 
@@ -71,6 +76,7 @@ class TaskServiceTest {
     }
 
     @Test
+    @DisplayName("Получение задачи по ID, когда задача не существует")
     void getTaskById_WhenTaskNotExists_ShouldThrowException() {
         when(taskRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -78,56 +84,66 @@ class TaskServiceTest {
     }
 
     @Test
+    @DisplayName("Обновление задачи должно отправлять сообщение Kafka, если статус изменился")
     void updateTask_WhenStatusChanged_ShouldSendKafkaMessage() {
-        Task existingTask = new Task();
-        existingTask.setId(1L);
-        existingTask.setStatus(TaskStatus.PENDING);
-
+        // Arrange
+        Task existingTask = new Task(1L, "Test Task", "Description", 1L, TaskStatus.PENDING);
         when(taskRepository.findById(1L)).thenReturn(Optional.of(existingTask));
-        when(taskRepository.save(any(Task.class))).thenReturn(task);
+        when(taskRepository.save(any(Task.class))).thenReturn(existingTask);
 
+        // Act
         taskService.updateTask(1L, taskDto);
 
-        verify(taskStatusProducer).sendTaskStatusUpdate(1L, TaskStatus.PENDING);
+        // Assert
+        verify(taskStatusProducer, times(1)).sendTaskStatusUpdate(1L, TaskStatus.IN_PROGRESS);
     }
 
     @Test
+    @DisplayName("Обновление задачи не должно отправлять сообщение Kafka, если статус не изменился")
     void updateTask_WhenStatusNotChanged_ShouldNotSendKafkaMessage() {
-        taskDto.setStatus(TaskStatus.PENDING); // Тот же статус
+        taskDto.setStatus(TaskStatus.PENDING);
 
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         when(taskRepository.save(any(Task.class))).thenReturn(task);
 
         taskService.updateTask(1L, taskDto);
 
-        verify(taskStatusProducer, never()).sendTaskStatusUpdate(any(), any());
+        verify(taskStatusProducer, never()).sendTaskStatusUpdate(anyLong(), any());
     }
 
     @Test
-    void shouldCreateTask() {
-        TaskDto taskDto = new TaskDto("Test Task", "Description", 1L, TaskStatus.PENDING);
-        Task task = new Task(1L, "Test Task", "Description", 1L, TaskStatus.PENDING);
+    @DisplayName("Удаление существующей задачи")
+    void deleteTask_ShouldDeleteExistingTask() {
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
 
-        when(taskRepository.save(any(Task.class))).thenReturn(task);
+        taskService.deleteTask(1L);
 
-        Task createdTask = taskService.createTask(taskDto);
-
-        assertNotNull(createdTask);
-        assertEquals("Test Task", createdTask.getTitle());
-        verify(taskRepository).save(any(Task.class));
+        verify(taskRepository).delete(task);
     }
 
     @Test
-    void shouldUpdateTaskStatus() {
-        Task existingTask = new Task(1L, "Old Task", "Description", 1L, TaskStatus.PENDING);
-        TaskDto updateDto = new TaskDto("New Task", "Updated Description", 1L, TaskStatus.COMPLETED);
+    @DisplayName("Удаление задачи, которая не существует, должно выбрасывать исключение")
+    void deleteTask_WhenTaskNotExists_ShouldThrowException() {
+        when(taskRepository.findById(1L)).thenReturn(Optional.empty());
 
-        when(taskRepository.findById(1L)).thenReturn(Optional.of(existingTask));
-        when(taskRepository.save(any(Task.class))).thenReturn(existingTask);
+        assertThrows(TaskNotFoundException.class, () -> taskService.deleteTask(1L));
+        verify(taskRepository, never()).delete(any());
+    }
 
-        Task updatedTask = taskService.updateTask(1L, updateDto);
+    @Test
+    @DisplayName("Получение всех задач")
+    void getAllTasks_ShouldReturnListOfTasks() {
+        List<Task> tasks = List.of(
+                new Task(1L, "Task 1", "Description 1", 1L, TaskStatus.PENDING),
+                new Task(2L, "Task 2", "Description 2", 2L, TaskStatus.COMPLETED)
+        );
 
-        assertEquals(TaskStatus.COMPLETED, updatedTask.getStatus());
-        verify(taskStatusProducer).sendTaskStatusUpdate(1L, TaskStatus.COMPLETED);
+        when(taskRepository.findAll()).thenReturn(tasks);
+
+        List<Task> result = taskService.getAllTasks();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(taskRepository).findAll();
     }
 }
