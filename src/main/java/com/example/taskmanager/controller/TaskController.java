@@ -4,6 +4,7 @@ import com.example.apiloggingstarter.annotation.Loggable;
 import com.example.taskmanager.model.Task;
 import com.example.taskmanager.model.dto.TaskDto;
 import com.example.taskmanager.service.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class TaskController {
     @Loggable
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Task createTask(@RequestBody TaskDto taskDto) {
+    public Task createTask(@RequestBody @Valid TaskDto taskDto) {
         return taskService.createTask(taskDto);
     }
 

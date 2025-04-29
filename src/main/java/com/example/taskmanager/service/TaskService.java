@@ -52,6 +52,7 @@ public class TaskService {
         boolean statusChanged = taskDto.getStatus() != null &&
                 !taskDto.getStatus().equals(existingTask.getStatus());
 
+        // Обновление полей задачи
         existingTask.setTitle(taskDto.getTitle());
         existingTask.setDescription(taskDto.getDescription());
         existingTask.setUserId(taskDto.getUserId());
@@ -60,8 +61,10 @@ public class TaskService {
             existingTask.setStatus(taskDto.getStatus());
         }
 
+        // Сохранение обновленной задачи
         Task updatedTask = taskRepository.save(existingTask);
 
+        // Отправка Kafka-сообщения только после обновления статуса
         if (statusChanged) {
             log.info("Task status changed. Sending status update for Task ID: {}", id);
             taskStatusProducer.sendTaskStatusUpdate(id, updatedTask.getStatus());
@@ -70,6 +73,7 @@ public class TaskService {
         log.info("Task with ID: {} updated successfully", id);
         return updatedTask;
     }
+
 
     public void deleteTask(Long id) {
         log.info("Deleting task with ID: {}", id);
